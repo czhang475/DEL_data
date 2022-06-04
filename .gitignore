@@ -1,0 +1,2 @@
+# ignore all csv files (we have not yet published!)
+*.csv
