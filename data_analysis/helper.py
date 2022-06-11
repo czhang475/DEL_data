@@ -9,6 +9,8 @@ import hdbscan
 from sklearn.metrics import silhouette_score, silhouette_samples
 from sklearn.cluster import DBSCAN
 
+from openeye import oechem
+
 
 
 def get_largest_fragment(mol):
@@ -145,24 +147,24 @@ def stacked_plots(data, bins_x, logy):
 
     stacks = data.groupby(['Cluster', 'bins'], as_index=True).size().unstack()
     
-    if bins_x:
+    if bins_x: 
         fig, axs = plt.subplots(figsize=(12,13))
         # Do not plot the cluster corresponding to noise
         stacks[1:].T.plot(kind='bar', stacked=True, color=plt.cm.rainbow(np.linspace(0,1,len(stacks[1:]))), ax=axs, logy=logy)
-        axs.set_xticklabels(labels=labels)
-        #axs.set_xticklabels(labels=['0.0', '(0.0, 0.2]', '(0.2, 0.4]', '(0.4, 0.6]', '(0.6, 0.8]', '(0.8, 1.0]'])
-        axs.set_ylabel('Number of BBs')
-        axs.set_title('Proportion of cluster in each activity bin')
+        axs.set_xticklabels(labels=labels, fontsize=14)
+        axs.set_xlabel('Activity bins', fontsize=16)
+        axs.set_ylabel('Number of BBs', fontsize=16)
+        axs.set_title('Proportion of cluster in each activity bin', fontsize=20)
         axs.legend(ncol=7, loc='upper right')
         
     else:
         fig, axs = plt.subplots(figsize=(20,12))
         stacks[1:].plot(kind='bar', stacked=True, logy=logy, ax=axs)
         axs.legend(labels=labels)
-        #axs.legend(labels=['0.0', '(0.0, 0.2]', '(0.2, 0.4]', '(0.4, 0.6]', '(0.6, 0.8]', '(0.8, 1.0]'])
-        axs.set_ylabel('Number of BBs')
-        axs.set_title('Distribution of activity of BBs in each cluster')
-    return None
+        axs.set_xlabel('Cluster id', fontsize=16)
+        axs.set_ylabel('Number of BBs', fontsize=16)
+        axs.set_title('Distribution of activity of BBs in each cluster', fontsize=20)
+    return fig
  
 def HDBSCAN(mat, BB_info, **kwargs):
     '''
@@ -330,4 +332,26 @@ def butina_search(mat, BB_info, dist_range):
     plt.show()
     
     return butina_dict
+
+def contains_FG(SMILES, query):
+    '''
+    Checks to see if a molecule contains a specified functional group.
+    
+    Input
+    -----
+    SMILES : str
+        SMILES string of the compound of interest
+    query : str
+        SMILES of the functional group to query
+    
+    Output
+    ------
+    match : bool
+        returns True if the queried functional group is present in the molecule
+    '''
+    ss = oechem.OESubSearch(query)
+    mol = oechem.OEGraphMol()
+    oechem.OESmilesToMol(mol, SMILES)
+    oechem.OEPrepareSearch(mol, ss)
+    return ss.SingleMatch(mol)
 
