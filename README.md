@@ -1,4 +1,4 @@
-# DEL_stats
+# DEL_data
 
 Contains all the code necessary to reproduce analysis and primary figures for the manuscript.
 
